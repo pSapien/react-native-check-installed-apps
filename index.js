@@ -18,26 +18,31 @@ const APP_LIST = {
   "slack": createPackage("com.Slack", "slack", "open"),
 }
 
-const isAppInstalledAndroid = packageName =>
-  new Promise((res, rej) =>
-    NativeModules.CheckInstalledApps
-      .isAppInstalled(packageName, (isInstalled) => res(isInstalled))
-  )
+const resolvePackage = (keyOrPackage) => APP_LIST[keyOrPackage] || keyOrPackage;
 
-const isAppInstalledIOS = (key) =>
-  new Promise((res, rej) =>
+function isAppInstalledAndroid(keyOrPackage) {
+  const { pkgName } = resolvePackage(keyOrPackage);
+
+  return new Promise(res => {
+    return NativeModules.CheckInstalledApps.isAppInstalled(pkgName, (isInstalled) => res(isInstalled)) 
+  });
+}
+
+function isAppInstalledIOS(keyOrPackage) {
+  const { urlScheme, urlParams = '' } = resolvePackage(keyOrPackage);
+
+  return new Promise((res, rej) =>
     Linking
-      .canOpenURL(key.urlScheme + '://' + (key.urlParams || ''))
+      .canOpenURL(urlScheme + '://' + (urlParams))
       .then(isInstalled => res(isInstalled))
       .catch(err => rej(err))
   )
+}
 
 function isAppInstalled(keyOrPackage) {
-  const pkg = APP_LIST[keyOrPackage] || keyOrPackage;
-
   return Platform.select({
-    ios: () => isAppInstalledIOS(pkg),
-    android: () => isAppInstalledAndroid(pkg.pkgName),
+    ios: () => isAppInstalledIOS(keyOrPackage),
+    android: () => isAppInstalledAndroid(keyOrPackage),
   })();
 }
 
@@ -45,4 +50,5 @@ export {
   isAppInstalled,
   isAppInstalledIOS,
   isAppInstalledAndroid,
+  createPackage,
 }

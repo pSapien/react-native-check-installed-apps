@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, SafeAreaView, ActivityIndicator, StyleSheet } from 'react-native';
 
-import { isAppInstalled } from '../index';
+import { isAppInstalled, createPackage } from '../index';
 import { Table, Rows, Header } from './Table';
 
 const apps = [
@@ -14,19 +14,36 @@ const apps = [
   'viber',
 ]
 
+const customApps = [
+  ["com.ubercab", "uber", ""],
+  ["com.google.android.gm", "googlegmail", "co?subject=foo&body=bar"],
+]
+
+const createInstalledApp = (app, isInstalled) => ([
+  app.split('_').join(' '),
+  isInstalled ? "✅" : "❌",
+])
+
 export default function App() {
   const [installedApps, setInstalledApps] = React.useState([]);
 
   React.useEffect(() => {
     async function checkInstalledApps() {
-      let _installedApps = [];
+      const _installedApps = [];
 
-      for await (let app of apps) {
-        const _installedApp = [];
-        _installedApp[0] = app.split('_').join(' ');
-        _installedApp[1] = (await isAppInstalled(app)) ? "✅" : "❌";
+      for await (const app of apps) {
+        const isInstalled = await isAppInstalled(app);
+        const installedApp = createInstalledApp(app, isInstalled);
 
-        _installedApps.push(_installedApp);
+        _installedApps.push(installedApp);
+      }
+
+      for await (const customApp of customApps) {
+        const customPackage = createPackage(...customApp);
+        const isInstalled = await isAppInstalled(customPackage);
+        const installedApp = createInstalledApp(customApp[1], isInstalled);
+
+        _installedApps.push(installedApp);
       }
 
       setInstalledApps(_installedApps);
