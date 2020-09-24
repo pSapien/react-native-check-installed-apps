@@ -38,7 +38,7 @@ function isAppInstalled(keyOrPackage) {
   return Platform.select({
     ios: () => isAppInstalledIOS(pkg),
     android: () => isAppInstalledAndroid(pkg.pkgName),
-  });
+  })();
 }
 
 export {

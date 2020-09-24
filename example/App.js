@@ -24,7 +24,7 @@ export default function App() {
       for await (let app of apps) {
         const _installedApp = [];
         _installedApp[0] = app.split('_').join(' ');
-        _installedApp[1] = (await isAppInstalled(app)()) ? "✅" : "❌";
+        _installedApp[1] = (await isAppInstalled(app)) ? "✅" : "❌";
 
         _installedApps.push(_installedApp);
       }
